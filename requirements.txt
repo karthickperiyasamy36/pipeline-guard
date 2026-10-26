@@ -1,0 +1,11 @@
+
+pandas
+sqlalchemy
+pydantic
+pydantic-settings
+pandera
+fastapi
+uvicorn
+streamlit
+pytest
+httpx

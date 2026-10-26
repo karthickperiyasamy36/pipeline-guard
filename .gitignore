@@ -1,0 +1,37 @@
+ # Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated pipeline outputs
+data/processed/
+data/quarantine/
+
+# Keep raw input datasets available for version control
+# (sample_sales.csv will be tracked)
+
+# IDE and operating system
+.vscode/
+.DS_Store
+Thumbs.db
+*.invalid-backup
