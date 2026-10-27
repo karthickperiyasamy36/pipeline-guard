@@ -1,6 +1,6 @@
 # Pipeline Guard
 
-Pipeline Guard is a Python-based data ingestion and quality-checking project. It reads CSV files, validates their structure and records, calculates data-quality metrics, transforms accepted data, and saves the processed output.
+Pipeline Guard is a Python-based data ingestion and quality-checking project. It reads CSV files, validates their structure and records, calculates data-quality metrics, transforms accepted data, and saves the processed output. It also records pipeline execution history and provides API endpoints and a dashboard for monitoring runs.
 
 ## Features
 
@@ -46,6 +46,9 @@ pipeline-guard/
 ├── data/
 │   └── raw/
 │       └── sample_sales.csv
+├── docs/
+├── logs/
+├── scripts/
 ├── tests/
 │   └── unit/
 ├── .env.example
@@ -56,17 +59,29 @@ pipeline-guard/
 
 ## Setup
 
-Run the following commands from the project root in Git Bash on Windows:
+Run these commands from the project root in Git Bash on Windows.
+
+### 1. Create a virtual environment
 
 ```bash
 python -m venv .venv
+```
+
+### 2. Activate the virtual environment
+
+```bash
 source .venv/Scripts/activate
+```
+
+### 3. Install dependencies
+
+```bash
 python -m pip install -r requirements.txt
 ```
 
 ## Run the Pipeline
 
-Execute the pipeline against the sample CSV:
+Execute the pipeline against the sample CSV file:
 
 ```bash
 python -m app.cli data/raw/sample_sales.csv
@@ -76,19 +91,33 @@ The command prints a JSON summary containing the execution status, input and out
 
 ## Run Unit Tests
 
+Run the unit tests with:
+
 ```bash
 python -m pytest tests/unit -q -W default
 ```
 
-The current verified baseline is 72 passing unit tests. Run the command again after making changes to confirm the latest result.
+The previously verified baseline is **72 passing unit tests**. Run the command again after making changes to verify the current result.
 
 ## Start the API
 
+Start the FastAPI server:
+
 ```bash
-uvicorn app.api:app --reload
+python -m uvicorn app.api:app --reload
 ```
 
-When the server starts, open `http://127.0.0.1:8000/docs` to explore the interactive API documentation.
+Open the following URL in your browser to explore the interactive API documentation:
+
+http://127.0.0.1:8000/docs
+
+Available endpoints:
+
+- `GET /health` — checks API health.
+- `GET /runs` — retrieves recent pipeline runs.
+- `GET /runs/{run_id}` — retrieves details for an individual pipeline run.
+
+The health endpoint and the pipeline run history endpoints have been tested successfully in the local development environment.
 
 ## Start the Dashboard
 
@@ -98,11 +127,15 @@ Open a separate terminal in the project root, activate the virtual environment, 
 python -m streamlit run app/dashboard.py
 ```
 
+The dashboard provides a visual overview of pipeline runs and allows users to inspect individual run details.
+
 ## Configuration
 
-Use `.env.example` as a reference for environment configuration. Create a local `.env` file if required by the application's settings. Do not commit secrets or credentials.
+Use `.env.example` as a reference for environment configuration. Create a local `.env` file if required by the application's settings.
 
-## Current Scope
+Do not commit secrets or credentials.
+
+## Current Scope and Limitations
 
 This project currently uses a sample sales CSV and SQLite for local development. Production deployment, broader dataset testing, and additional operational features should be verified separately before being described as production-ready.
 
