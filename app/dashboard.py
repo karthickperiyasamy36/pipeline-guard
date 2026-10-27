@@ -23,7 +23,6 @@ def load_runs() -> list[dict]:
     try:
         create_tables(engine)
         repository = PipelineRunRepository(engine)
-
         runs = repository.list_runs(limit=100)
 
         return [
@@ -44,8 +43,18 @@ def load_runs() -> list[dict]:
         engine.dispose()
 
 
+def display_file_path(file_path) -> str:
+    """Display a placeholder when a file path is missing."""
+    if pd.isna(file_path) or not str(file_path).strip():
+        return "—"
+
+    return str(file_path)
+
+
 st.title("🛡️ Pipeline Guard")
-st.caption("Data ingestion, validation, quality monitoring, and execution history.")
+st.caption(
+    "Data ingestion, validation, quality monitoring, and execution history."
+)
 
 if st.button("Refresh data"):
     load_runs.clear()
@@ -63,12 +72,24 @@ if not runs:
     )
     st.stop()
 
+
 df = pd.DataFrame(runs)
 
+# Convert missing file paths to None so the dashboard displays them cleanly.
+for column in ["Processed File", "Quarantine File"]:
+    df[column] = df[column].where(df[column].notna(), None)
+
+
+# KPI metrics
 total_runs = len(df)
 successful_runs = int((df["Status"] == "success").sum())
 failed_runs = int((df["Status"] == "failed").sum())
-success_rate = successful_runs / total_runs * 100
+
+success_rate = (
+    successful_runs / total_runs * 100
+    if total_runs > 0
+    else 0.0
+)
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -77,8 +98,11 @@ col2.metric("Successful Runs", successful_runs)
 col3.metric("Failed Runs", failed_runs)
 col4.metric("Success Rate", f"{success_rate:.1f}%")
 
+
 st.divider()
 
+
+# Record processing summary
 st.subheader("Record Processing Summary")
 
 metric_columns = [
@@ -103,6 +127,8 @@ st.bar_chart(
     y="Total Records",
 )
 
+
+# Recent pipeline runs
 st.subheader("Recent Pipeline Runs")
 
 status_filter = st.selectbox(
@@ -119,10 +145,12 @@ if status_filter != "All":
 
 st.dataframe(
     filtered_df,
-    use_container_width=True,
+    width="stretch",
     hide_index=True,
 )
 
+
+# Inspect an individual pipeline run
 st.subheader("Inspect a Pipeline Run")
 
 run_ids = df["Run ID"].tolist()
@@ -132,7 +160,9 @@ selected_run_id = st.selectbox(
     run_ids,
 )
 
-selected_run = df[df["Run ID"] == selected_run_id].iloc[0]
+selected_run = df[
+    df["Run ID"] == selected_run_id
+].iloc[0]
 
 left, right = st.columns(2)
 
@@ -144,12 +174,19 @@ with left:
     st.write("**Output rows:**", selected_run["Output Rows"])
 
 with right:
-    st.write("**Processed file:**", selected_run["Processed File"])
-    st.write("**Quarantine file:**", selected_run["Quarantine File"])
+    processed_file = display_file_path(
+        selected_run["Processed File"]
+    )
+    quarantine_file = display_file_path(
+        selected_run["Quarantine File"]
+    )
+
+    st.write("**Processed file:**", processed_file)
+    st.write("**Quarantine file:**", quarantine_file)
 
     error_message = selected_run["Error"]
 
-    if pd.notna(error_message) and error_message:
+    if pd.notna(error_message) and str(error_message).strip():
         st.error(f"Pipeline error: {error_message}")
     else:
         st.success("No pipeline error recorded for this run.")

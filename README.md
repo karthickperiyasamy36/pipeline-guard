@@ -95,7 +95,7 @@ When the server starts, open `http://127.0.0.1:8000/docs` to explore the interac
 Open a separate terminal in the project root, activate the virtual environment, and run:
 
 ```bash
-streamlit run app/dashboard.py
+python -m streamlit run app/dashboard.py
 ```
 
 ## Configuration
